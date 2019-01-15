@@ -96,5 +96,5 @@ void Chan::chLiteJoint::ApplyImpulse()
 	body2->velocity += body2->invMass * P;
 	body2->angularVelocity += body2->invI * Cross(r1, impulse);
 
-	P += impulse;
+	P += impulse;     
 }

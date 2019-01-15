@@ -7,11 +7,11 @@
 #include "chMath.h"
 #include "chLiteArbiter.h"
 
-struct chLiteBody;
-struct chLiteJoint;
-
 namespace Chan
 {
+	struct chLiteBody;
+	struct chLiteJoint;
+
 	class chLiteWorld
 	{
 	public:

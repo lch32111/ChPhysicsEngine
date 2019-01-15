@@ -4,56 +4,134 @@
     <Filter Include="App">
       <UniqueIdentifier>{753f5724-f631-4992-8cce-36ff11cedb93}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameEngine">
-      <UniqueIdentifier>{b4cf197a-acf7-4434-ba68-cd299c3a5239}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameEngine\WindowSystem">
-      <UniqueIdentifier>{3f8be0b6-2143-4900-a786-d37f221b88e2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameEngine\GraphicsEngine">
-      <UniqueIdentifier>{fd5a162d-bf6b-4efc-9f4e-0c3804da4fbe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameEngine\GraphicsEngine\SwapChain">
-      <UniqueIdentifier>{c5ab5cd1-29af-412c-a0c5-e74619f2ceec}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ShaderFolder">
       <UniqueIdentifier>{06e38ff0-830e-408c-9ac5-449f57507bad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{a1010d36-db6c-488f-b363-1ad0fc3c3e69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{f6bfee21-f533-4b00-9004-a25df7598c93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Keyboard">
+      <UniqueIdentifier>{8004690a-8ac6-45eb-bca3-00478f11b3a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Keyboard">
+      <UniqueIdentifier>{c3e62168-7e91-42c0-9239-393407346209}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Mouse">
+      <UniqueIdentifier>{4ffb10f7-ab16-484e-bb24-b29cc568e708}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mouse">
+      <UniqueIdentifier>{cbc0e357-6064-49ac-b13b-1010c5500600}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Graphics">
+      <UniqueIdentifier>{d853a074-b75a-4ddc-a7af-f7eb1d616e2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics">
+      <UniqueIdentifier>{97bfe779-29d6-478b-b5af-47a967c88cc8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>App</Filter>
     </ClCompile>
-    <ClCompile Include="AppWindow.cpp">
-      <Filter>App</Filter>
+    <ClCompile Include="StringConverter.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>GameEngine\WindowSystem</Filter>
+    <ClCompile Include="ErrorLogger.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsEngine.cpp">
-      <Filter>GameEngine\GraphicsEngine</Filter>
+    <ClCompile Include="RenderWindow.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SwapChain.cpp">
-      <Filter>GameEngine\GraphicsEngine\SwapChain</Filter>
+    <ClCompile Include="Engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowContainer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard\KeyboardClass.cpp">
+      <Filter>Source Files\Keyboard</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard\KeyboardEvent.cpp">
+      <Filter>Source Files\Keyboard</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse\MouseClass.cpp">
+      <Filter>Source Files\Mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse\MouseEvent.cpp">
+      <Filter>Source Files\Mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Graphics.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\AdapterReader.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Shaders.cpp">
+      <Filter>Source Files\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AppWindow.h">
-      <Filter>App</Filter>
+    <ClInclude Include="StringConverter.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>GameEngine\WindowSystem</Filter>
+    <ClInclude Include="ErrorLogger.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsEngine.h">
-      <Filter>GameEngine\GraphicsEngine</Filter>
+    <ClInclude Include="RenderWindow.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SwapChain.h">
-      <Filter>GameEngine\GraphicsEngine\SwapChain</Filter>
+    <ClInclude Include="Engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard\KeyboardClass.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard\KeyboardEvent.h">
+      <Filter>Header Files\Keyboard</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse\MouseClass.h">
+      <Filter>Header Files\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse\MouseEvent.h">
+      <Filter>Header Files\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Graphics.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\AdapterReader.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Vertex.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Shaders.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\VertexBuffer.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\IndexBuffer.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ConstantBufferTypes.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ConstantBuffer.h">
+      <Filter>Header Files\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders.shader">
+    <FxCompile Include="vertexshader.hlsl">
       <Filter>ShaderFolder</Filter>
-    </None>
+    </FxCompile>
+    <FxCompile Include="pixelshader.hlsl">
+      <Filter>ShaderFolder</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

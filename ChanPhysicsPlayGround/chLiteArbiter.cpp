@@ -1,6 +1,7 @@
 #include "chLiteArbiter.h"
 #include "chLiteBody.h"
 #include "chLiteWorld.h"
+#include "chCollide.h"
 
 Chan::chLiteArbiter::chLiteArbiter(chLiteBody * b1, chLiteBody * b2)
 {
