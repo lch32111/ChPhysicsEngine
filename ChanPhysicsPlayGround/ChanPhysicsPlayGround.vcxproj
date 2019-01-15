@@ -122,6 +122,9 @@
     <ClCompile Include="chCircle.cpp" />
     <ClCompile Include="chCollision.cpp" />
     <ClCompile Include="chContactSolver.cpp" />
+    <ClCompile Include="chLiteArbiter.cpp" />
+    <ClCompile Include="chLiteBody.cpp" />
+    <ClCompile Include="chLiteWorld.cpp" />
     <ClCompile Include="chMath.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -130,6 +133,9 @@
     <ClInclude Include="chCircle.h" />
     <ClInclude Include="chCollision.h" />
     <ClInclude Include="chContactSolver.h" />
+    <ClInclude Include="chLiteArbiter.h" />
+    <ClInclude Include="chLiteBody.h" />
+    <ClInclude Include="chLiteWorld.h" />
     <ClInclude Include="chMath.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
