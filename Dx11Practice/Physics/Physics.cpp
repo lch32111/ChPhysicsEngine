@@ -3,13 +3,79 @@
 Physics::Physics()
 {
 	timeStep = 1.f / 60.f;
-	iteration = 10;
+	iteration = 7;
 	gravity.Set(0.f, -10.f);
 
 	numBodies = 0;
 	numJoints = 0;
 
 	world = new Chan::chLiteWorld(gravity, iteration);
+}
+
+Physics::~Physics()
+{
+	delete world;
+}
+
+void Physics::step()
+{
+	world->Step(timeStep);
+}
+
+Chan::chLiteWorld * Physics::getWorld()
+{
+	return world;
+}
+
+void Physics::launchBomb()
+{
+	//if (!bomb)
+	//{
+	//	bomb = bodies + numBodies;
+	//	bomb->Set(Chan::ChVector2(1.f, 1.f), 50.f);
+	//	bomb->friction = 0.2f;
+	//	world->Add(bomb);
+	//	++numBodies;
+	//}
+
+	bomb = bodies + numBodies;
+	bomb->Set(Chan::ChVector2(1.f, 1.f), 50.f);
+	bomb->friction = 0.2f;
+	world->Add(bomb);
+	++numBodies;
+
+	bomb->position.Set(Chan::Random(-15.f, 15.f), 15.f);
+	bomb->rotation = Chan::Random(-1.5f, 1.5f);
+	bomb->velocity = -1.5f * bomb->position;
+	bomb->angularVelocity = Chan::Random(-20.f, 20.f);
+}
+
+void Physics::demo1()
+{
+	world->Clear();
+	numBodies = 0;
+	numJoints = 0;
+	bomb = NULL;
+
+	Chan::chLiteBody* b = bodies;
+
+	b->Set(Chan::ChVector2(100.0f, 20.0f), FLT_MAX);
+	b->position.Set(0.0f, -0.5f * b->width.y);
+	world->Add(b);
+	++b; ++numBodies;
+
+	b->Set(Chan::ChVector2(1.0f, 1.0f), 200.0f);
+	b->position.Set(0.0f, 4.0f);
+	world->Add(b);
+	++b; ++numBodies;
+}
+
+void Physics::demo3()
+{
+	world->Clear();
+	numBodies = 0;
+	numJoints = 0;
+	bomb = NULL;
 
 	Chan::chLiteBody* b = bodies;
 
@@ -57,17 +123,69 @@ Physics::Physics()
 	}
 }
 
-Physics::~Physics()
+void Physics::demo4()
 {
-	delete world;
+	world->Clear();
+	numBodies = 0;
+	numJoints = 0;
+	bomb = NULL;
+
+	Chan::chLiteBody* b = bodies;
+	b->Set(Chan::ChVector2(100.0f, 20.0f), FLT_MAX);
+	b->friction = 0.2f;
+	b->position.Set(0.0f, -0.5f * b->width.y);
+	b->rotation = 0.0f;
+	world->Add(b);
+	++b; ++numBodies;
+
+	for (int i = 0; i < 10; ++i)
+	{
+		b->Set(Chan::ChVector2(1.0f, 1.0f), 1.0f);
+		b->friction = 0.2f;
+		float x = Chan::Random(-0.1f, 0.1f);
+		b->position.Set(x, 0.51f + 1.05f * i);
+		world->Add(b);
+		++b; ++numBodies;
+	}
 }
 
-void Physics::step()
+void Physics::demo5()
 {
-	world->Step(timeStep);
+	world->Clear();
+	numBodies = 0;
+	numJoints = 0;
+	bomb = NULL;
+
+	Chan::chLiteBody* b = bodies;
+
+	b->Set(Chan::ChVector2(100.0f, 20.0f), FLT_MAX);
+	b->friction = 0.2f;
+	b->position.Set(0.0f, -0.5f * b->width.y);
+	b->rotation = 0.0f;
+	world->Add(b);
+	++b; ++numBodies;
+
+	Chan::ChVector2 x(-6.0f, 0.75f);
+	Chan::ChVector2 y;
+
+	for (int i = 0; i < 10; ++i)
+	{
+		y = x;
+
+		for (int j = i; j < 10; ++j)
+		{
+			b->Set(Chan::ChVector2(1.0f, 1.0f), 10.0f);
+			b->friction = 0.2f;
+			b->position = y;
+			world->Add(b);
+			++b; ++numBodies;
+
+			y += Chan::ChVector2(1.125f, 0.0f);
+		}
+
+		//x += Chan::ChVector2(0.5625f, 1.125f);
+		x += Chan::ChVector2(0.5625f, 2.0f);
+	}
 }
 
-Chan::chLiteWorld * Physics::getWorld()
-{
-	return world;
-}
+

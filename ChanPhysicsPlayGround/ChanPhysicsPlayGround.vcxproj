@@ -121,7 +121,6 @@
   <ItemGroup>
     <ClCompile Include="chAABB.cpp" />
     <ClCompile Include="chCircle.cpp" />
-    <ClCompile Include="chCollide.h" />
     <ClCompile Include="chCollision.cpp" />
     <ClCompile Include="chContactSolver.cpp" />
     <ClCompile Include="chLiteArbiter.cpp" />

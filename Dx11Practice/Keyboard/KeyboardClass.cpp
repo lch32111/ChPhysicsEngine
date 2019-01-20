@@ -3,12 +3,33 @@
 KeyboardClass::KeyboardClass()
 {
 	for (int i = 0; i < 256; ++i)
+	{
 		this->keyStates[i] = false;
+		this->prevStates[i] = false;
+	}
 }
 
 bool KeyboardClass::KeyIsPressed(const unsigned char keycode)
 {
 	return this->keyStates[keycode];
+}
+
+bool KeyboardClass::KeyIsPressedOnce(const unsigned char keycode)
+{
+	if (this->keyStates[keycode] && !prevStates[keycode])
+	{
+		prevStates[keycode] = true;
+		return true;
+	}
+	else if (this->keyStates[keycode] && prevStates[keycode])
+	{
+		return false;
+	}
+	else
+	{
+		prevStates[keycode] = false;
+		return false;
+	}
 }
 
 bool KeyboardClass::KeyBufferIsEmpty()

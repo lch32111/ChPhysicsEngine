@@ -22,6 +22,9 @@ namespace Chan
 
 	struct Contact
 	{
+		Contact() : Pn(ChReal(0.0)), Pt(ChReal(0.0)), Pnb(ChReal(0.0))
+		{ }
+
 		ChVector2 position;
 		ChVector2 normal;
 		ChVector2 r1, r2;

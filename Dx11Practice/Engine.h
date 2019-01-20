@@ -16,5 +16,5 @@ public:
 	void RenderFrame();
 private:
 	Timer timer;
-	actorBox actors[20];
+	actorBox actors[200];
 };

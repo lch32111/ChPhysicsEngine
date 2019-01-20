@@ -42,9 +42,6 @@
     <ClCompile Include="chLiteJoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chCollide.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -9,6 +9,7 @@ public:
 	Camera();
 
 	void SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ);
+	void SetOrthoValue(float width, float height, float nearZ, float farZ);
 
 	const XMMATRIX& GetViewMatrix() const;
 	const XMMATRIX & GetProjectionMatrix() const;

@@ -123,4 +123,3 @@ void Chan::chLiteWorld::Step(ChReal dt)
 		b->torque = ChReal(0.0);
 	}
 }
-

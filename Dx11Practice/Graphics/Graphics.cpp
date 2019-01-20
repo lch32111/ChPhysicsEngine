@@ -39,13 +39,10 @@ void Graphics::RenderFrame(actorBox* boxes, unsigned numb)
 	this->deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), vertexBuffer.StridePtr(), &offset);
 	this->deviceContext->IASetIndexBuffer(indicesBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
+	XMMATRIX viewProj = camera.GetViewMatrix() * camera.GetProjectionMatrix();
 	for (unsigned i = 0; i < numb; ++i)
 	{
-		XMMATRIX model = XMMatrixIdentity();
-		model *= XMMatrixScaling(boxes[i].scale.x, boxes[i].scale.y, boxes[i].scale.z);
-		model *= XMMatrixRotationZ(boxes[i].rotation);
-		model *= XMMatrixTranslation(boxes[i].position.x, boxes[i].position.y, boxes[i].position.z);
-		constantbuffer.data.mat = model * camera.GetViewMatrix() * camera.GetProjectionMatrix();
+		constantbuffer.data.mat = boxes[i].modelMatrix * viewProj;
 		constantbuffer.data.mat = DirectX::XMMatrixTranspose(constantbuffer.data.mat);
 		constantbuffer.ApplyChanges();
 		this->deviceContext->VSSetConstantBuffers(0, 1, constantbuffer.GetAddressOf());
@@ -62,14 +59,22 @@ void Graphics::RenderFrame(actorBox* boxes, unsigned numb)
 		fpsCount = 0;
 		fpsTimer.Restart();
 	}
+	
 	spriteBatch->Begin();
-	spriteFont->DrawString(spriteBatch.get(),StringConverter::StringToWide(fpsString).c_str(),
-		DirectX::XMFLOAT2(0, 0), DirectX::Colors::White,
-		0.0f, DirectX::XMFLOAT2(0.f, 0.f), DirectX::XMFLOAT2(1.f, 1.f));
+	XMVECTOR result = spriteFont->MeasureString(L"temp");
+	float height = XMVectorGetY(result);
+
+
+	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(fpsString).c_str(),
+		DirectX::XMFLOAT2(0, 0));
+	
 	XMFLOAT3 camPos = camera.GetPositionFloat3();
-	std::string camPosStr = std::to_string(camPos.x) + ' ' + std::to_string(camPos.y) + ' ' + std::to_string(camPos.z);
-	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(camPosStr).c_str(), XMFLOAT2(0, 20), DirectX::Colors::White,
-		0.0f, XMFLOAT2(0.f, 0.f), XMFLOAT2(1.f, 1.f));
+	std::string temp = std::to_string(camPos.x) + ' ' + std::to_string(camPos.y) + ' ' + std::to_string(camPos.z);
+	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(temp).c_str(), XMFLOAT2(0, height));
+
+	temp = "Number of Bodies : " + std::to_string(numb);
+	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(temp).c_str(), XMFLOAT2(0, height*2));
+
 	spriteBatch->End();
 
 	// Vsync for Physics
@@ -331,7 +336,11 @@ bool Graphics::InitializeScene()
 		return false;
 	}
 
-	camera.SetPosition(0.f, 0.f, -2.f);
-	camera.SetProjectionValues(90.f, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.1f, 1000.f);
+	camera.SetPosition(0.f, 8.f, 0.f);
+	// camera.SetProjectionValues(90.f, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.1f, 1000.f);
+	float aspect = (float)windowWidth / (float)windowHeight;
+	float zoom = 10.f;
+	float pan_y = 8.0;
+	camera.SetOrthoValue(zoom * aspect * 2, zoom * 2, -1, 1);
 	return true;
 }
