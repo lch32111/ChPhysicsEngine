@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChanPhysicsPlayGround", "ChanPhysicsPlayGround\ChanPhysicsPlayGround.vcxproj", "{57759279-39EA-475F-B2A8-786C6BEED796}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dx11Practice", "Dx11Practice\Dx11Practice.vcxproj", "{72C3DF80-45C6-4901-B70E-CE27CDBB2295}"
+	ProjectSection(ProjectDependencies) = postProject
+		{57759279-39EA-475F-B2A8-786C6BEED796} = {57759279-39EA-475F-B2A8-786C6BEED796}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

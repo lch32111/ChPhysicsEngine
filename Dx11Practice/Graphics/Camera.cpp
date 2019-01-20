@@ -117,14 +117,14 @@ void Camera::SetLookAtPos(XMFLOAT3 lookAtPos)
 	float pitch = 0.f;
 	if (lookAtPos.y != 0.f)
 	{
-		const float distance = sqrt(lookAtPos.x * lookAtPos.x + lookAtPos.z * lookAtPos.z);
+		const float distance = sqrtf(lookAtPos.x * lookAtPos.x + lookAtPos.z * lookAtPos.z);
 		pitch = atan(lookAtPos.y / distance);
 	}
 
 	float yaw = 0.f;
 	if (lookAtPos.x != 0.f)
 	{
-		yaw = atan(lookAtPos.x / lookAtPos.z);
+		yaw = atanf(lookAtPos.x / lookAtPos.z);
 	}
 	if (lookAtPos.z > 0)
 		yaw += XM_PI;

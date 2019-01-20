@@ -2,6 +2,8 @@
 
 #include "WindowContainer.h"
 #include "Timer.h"
+#include "GameActor.h"
+
 
 class Engine : WindowContainer
 {
@@ -14,4 +16,5 @@ public:
 	void RenderFrame();
 private:
 	Timer timer;
+	actorBox actors[20];
 };

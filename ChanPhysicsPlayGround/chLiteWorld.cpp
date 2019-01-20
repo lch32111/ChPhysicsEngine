@@ -80,7 +80,7 @@ void Chan::chLiteWorld::Step(ChReal dt)
 	{
 		chLiteBody* b = bodies[i];
 
-		if (b->invMass = ChReal(0.0))
+		if (b->invMass == ChReal(0.0))
 			continue;
 
 		b->velocity += dt * (gravity + b->invMass * b->force);
@@ -101,7 +101,7 @@ void Chan::chLiteWorld::Step(ChReal dt)
 	// Perform iterations
 	for (int i = 0; i < iterations; ++i)
 	{
-		for (ArbIter arb = arbiters.begin(); ++arb != arbiters.end(); ++arb)
+		for (ArbIter arb = arbiters.begin(); arb != arbiters.end(); ++arb)
 		{
 			arb->second.ApplyImpulse();
 		}

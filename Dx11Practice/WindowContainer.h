@@ -4,6 +4,7 @@
 #include "Keyboard/KeyboardClass.h"
 #include "Mouse/MouseClass.h"
 #include "Graphics/Graphics.h"
+#include "Physics/Physics.h"
 
 class WindowContainer
 {
@@ -15,6 +16,7 @@ protected:
 	KeyboardClass keyboard;
 	MouseClass mouse;
 	Graphics gfx;
+	Physics physics;
 private:
 
 };

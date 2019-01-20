@@ -18,13 +18,14 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 	return true;
 }
 
-void Graphics::RenderFrame()
+void Graphics::RenderFrame(actorBox* boxes, unsigned numb)
 {
 	float bgColor[] = { 0.1f, 0.1f, 0.1f, 1.f };
 	this->deviceContext->ClearRenderTargetView(this->renderTargetView.Get(), bgColor);
 	this->deviceContext->ClearDepthStencilView(this->depthStencilView.Get(),
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
+	// Specific setup
 	this->deviceContext->IASetInputLayout(this->vertexshader.GetInputLayout());
 	this->deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	this->deviceContext->RSSetState(this->rasterizerState.Get());
@@ -33,20 +34,23 @@ void Graphics::RenderFrame()
 	this->deviceContext->PSSetShader(pixelshader.GetShader(), NULL, 0);
 	
 	UINT offset = 0;
-
-	//Update Constant buffer
-	DirectX::XMMATRIX world = DirectX::XMMatrixIdentity();
-	constantbuffer.data.mat = world * camera.GetViewMatrix() * camera.GetProjectionMatrix();
-	constantbuffer.data.mat = DirectX::XMMatrixTranspose(constantbuffer.data.mat);
-	if (!constantbuffer.ApplyChanges())
-		return;
-	this->deviceContext->VSSetConstantBuffers(0, 1, constantbuffer.GetAddressOf());
-	
 	this->deviceContext->PSSetSamplers(0, 1, this->samplerState.GetAddressOf());
 	this->deviceContext->PSSetShaderResources(0, 1, this->myTexture.GetAddressOf());
 	this->deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), vertexBuffer.StridePtr(), &offset);
 	this->deviceContext->IASetIndexBuffer(indicesBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	this->deviceContext->DrawIndexed(indicesBuffer.BufferSize(), 0, 0);
+
+	for (unsigned i = 0; i < numb; ++i)
+	{
+		XMMATRIX model = XMMatrixIdentity();
+		model *= XMMatrixScaling(boxes[i].scale.x, boxes[i].scale.y, boxes[i].scale.z);
+		model *= XMMatrixRotationZ(boxes[i].rotation);
+		model *= XMMatrixTranslation(boxes[i].position.x, boxes[i].position.y, boxes[i].position.z);
+		constantbuffer.data.mat = model * camera.GetViewMatrix() * camera.GetProjectionMatrix();
+		constantbuffer.data.mat = DirectX::XMMatrixTranspose(constantbuffer.data.mat);
+		constantbuffer.ApplyChanges();
+		this->deviceContext->VSSetConstantBuffers(0, 1, constantbuffer.GetAddressOf());
+		this->deviceContext->DrawIndexed(indicesBuffer.BufferSize(), 0, 0);
+	}
 
 	// Draw Text
 	static int fpsCount = 0;
@@ -62,9 +66,14 @@ void Graphics::RenderFrame()
 	spriteFont->DrawString(spriteBatch.get(),StringConverter::StringToWide(fpsString).c_str(),
 		DirectX::XMFLOAT2(0, 0), DirectX::Colors::White,
 		0.0f, DirectX::XMFLOAT2(0.f, 0.f), DirectX::XMFLOAT2(1.f, 1.f));
+	XMFLOAT3 camPos = camera.GetPositionFloat3();
+	std::string camPosStr = std::to_string(camPos.x) + ' ' + std::to_string(camPos.y) + ' ' + std::to_string(camPos.z);
+	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(camPosStr).c_str(), XMFLOAT2(0, 20), DirectX::Colors::White,
+		0.0f, XMFLOAT2(0.f, 0.f), XMFLOAT2(1.f, 1.f));
 	spriteBatch->End();
 
-	this->swapchain->Present(0, NULL);
+	// Vsync for Physics
+	this->swapchain->Present(1, NULL);
 }
 
 bool Graphics::InitializeDirectX(HWND hwnd)
@@ -202,7 +211,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 
-	rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
+	rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
 	rasterizerDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
 	hr = this->device->CreateRasterizerState(&rasterizerDesc, rasterizerState.GetAddressOf());
 	if (FAILED(hr))

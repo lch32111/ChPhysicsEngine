@@ -21,7 +21,7 @@ bool Engine::ProcessMessages()
 
 void Engine::Update()
 {
-	float dt = timer.GetMilisecondsElapsed();
+	float dt = (float)timer.GetMilisecondsElapsed();
 	timer.Restart();
 
 	while (!keyboard.CharBufferIsEmpty())
@@ -35,7 +35,7 @@ void Engine::Update()
 		unsigned char keycode = kbe.GetKeyCode();
 	}
 
-	const float mouseSpeed = 0.01 * dt;
+	const float mouseSpeed = 0.001f * dt;
 	while (!mouse.EventBufferIsEmpty())
 	{
 		MouseEvent me = mouse.ReadEvent();
@@ -63,9 +63,20 @@ void Engine::Update()
 	if (keyboard.KeyIsPressed('Z'))
 		this->gfx.camera.AdjustPosition(0.f, -cameraSpeed, 0.f);
 
+	physics.step();
 }
 
 void Engine::RenderFrame()
 {
-	gfx.RenderFrame();
+	Chan::chLiteWorld* w = physics.getWorld();
+	
+	for (unsigned i = 0; i < w->bodies.size(); ++i)
+	{
+		actors[i].position = XMFLOAT3(w->bodies[i]->position.x,
+									w->bodies[i]->position.y, 0.f);
+		actors[i].scale = XMFLOAT3(w->bodies[i]->width.x, w->bodies[i]->width.y, 0.f);
+		actors[i].rotation = w->bodies[i]->rotation;
+	}
+
+	gfx.RenderFrame(actors, w->bodies.size());
 }

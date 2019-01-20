@@ -3,6 +3,7 @@
 #include "chLiteWorld.h"
 #include "chCollide.h"
 
+#include <iostream>
 Chan::chLiteArbiter::chLiteArbiter(chLiteBody * b1, chLiteBody * b2)
 {
 	if (b1 < b2)
@@ -16,7 +17,7 @@ Chan::chLiteArbiter::chLiteArbiter(chLiteBody * b1, chLiteBody * b2)
 		body2 = b1;
 	}
 
-	numContacts = Collide(contacts, body1, body2);
+	numContacts = Collide(contacts, body1, body2); 
 
 	friction = ChReal_sqrt(body1->friction * body2->friction);
 }
@@ -75,7 +76,7 @@ void Chan::chLiteArbiter::PreStep(ChReal inv_dt)
 		ChReal rt1 = dot(r1, tangent);
 		ChReal rt2 = dot(r2, tangent);
 		ChReal kTangent = body1->invMass + body2->invMass;
-		kTangent = body1->invI * (dot(r1, r1) - rt1 * rt1) + body2->invI * (dot(r2, r2) - rt2 * rt2);
+		kTangent += body1->invI * (dot(r1, r1) - rt1 * rt1) + body2->invI * (dot(r2, r2) - rt2 * rt2);
 		c->massTangent = ChReal(1.0) / kTangent;
 
 		c->bias = -k_biasFactor * inv_dt * Min(ChReal(0.0), c->separation + k_allowedPenetration);
