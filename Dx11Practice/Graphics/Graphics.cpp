@@ -2,7 +2,11 @@
 
 bool Graphics::Initialize(HWND hwnd, int width, int height)
 {
-	if (!InitializeDirectX(hwnd, width, height))
+	this->windowWidth = width;
+	this->windowHeight = height;
+	this->fpsTimer.Start();
+
+	if (!InitializeDirectX(hwnd))
 		return false;
 
 	if (!InitializeShaders())
@@ -31,14 +35,13 @@ void Graphics::RenderFrame()
 	UINT offset = 0;
 
 	//Update Constant buffer
-	static float yOff = 0.5f;
-	yOff -= 0.01f;
-	constantbuffer.data.xOffset = 0.0f;
-	constantbuffer.data.yOffset = yOff;
+	DirectX::XMMATRIX world = DirectX::XMMatrixIdentity();
+	constantbuffer.data.mat = world * camera.GetViewMatrix() * camera.GetProjectionMatrix();
+	constantbuffer.data.mat = DirectX::XMMatrixTranspose(constantbuffer.data.mat);
 	if (!constantbuffer.ApplyChanges())
 		return;
-
 	this->deviceContext->VSSetConstantBuffers(0, 1, constantbuffer.GetAddressOf());
+	
 	this->deviceContext->PSSetSamplers(0, 1, this->samplerState.GetAddressOf());
 	this->deviceContext->PSSetShaderResources(0, 1, this->myTexture.GetAddressOf());
 	this->deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), vertexBuffer.StridePtr(), &offset);
@@ -46,16 +49,25 @@ void Graphics::RenderFrame()
 	this->deviceContext->DrawIndexed(indicesBuffer.BufferSize(), 0, 0);
 
 	// Draw Text
+	static int fpsCount = 0;
+	static std::string fpsString = "FPS: 0";
+	fpsCount += 1;
+	if (fpsTimer.GetMilisecondsElapsed() > 1000.0)
+	{
+		fpsString = "FPS: " + std::to_string(fpsCount);
+		fpsCount = 0;
+		fpsTimer.Restart();
+	}
 	spriteBatch->Begin();
-	spriteFont->DrawString(spriteBatch.get(), L"HELLO WORLD",
+	spriteFont->DrawString(spriteBatch.get(),StringConverter::StringToWide(fpsString).c_str(),
 		DirectX::XMFLOAT2(0, 0), DirectX::Colors::White,
 		0.0f, DirectX::XMFLOAT2(0.f, 0.f), DirectX::XMFLOAT2(1.f, 1.f));
 	spriteBatch->End();
 
-	this->swapchain->Present(1, NULL);
+	this->swapchain->Present(0, NULL);
 }
 
-bool Graphics::InitializeDirectX(HWND hwnd, int width, int height)
+bool Graphics::InitializeDirectX(HWND hwnd)
 {
 	std::vector<AdapterData> adapters = AdapterReader::GetAdapters();
 
@@ -67,8 +79,8 @@ bool Graphics::InitializeDirectX(HWND hwnd, int width, int height)
 
 	DXGI_SWAP_CHAIN_DESC scd;
 	ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
-	scd.BufferDesc.Width = width;
-	scd.BufferDesc.Height = height;
+	scd.BufferDesc.Width = this->windowWidth;
+	scd.BufferDesc.Height = this->windowHeight;
 	scd.BufferDesc.RefreshRate.Numerator = 60;
 	scd.BufferDesc.RefreshRate.Denominator = 1;
 	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -130,8 +142,8 @@ bool Graphics::InitializeDirectX(HWND hwnd, int width, int height)
 
 	// Describe our Depth/Stencil Buffer
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
-	depthStencilDesc.Width = width;
-	depthStencilDesc.Height = height;
+	depthStencilDesc.Width = this->windowWidth;
+	depthStencilDesc.Height = this->windowHeight;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -179,8 +191,8 @@ bool Graphics::InitializeDirectX(HWND hwnd, int width, int height)
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = (FLOAT)width;
-	viewport.Height = (FLOAT)height;
+	viewport.Width = (FLOAT)this->windowWidth;
+	viewport.Height = (FLOAT)this->windowHeight;
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 
@@ -266,10 +278,10 @@ bool Graphics::InitializeScene()
 {
 	Vertex v[] = 
 	{
-		Vertex(-0.5f, -0.5f, 1.f, 0.0f, 1.0f), // Bottom Left
-		Vertex(-0.5f, 0.5f, 1.f, 0.f, 0.f), // Top Left
-		Vertex(0.5f, 0.5f, 1.f, 1.0f, 0.0f), //  Top Right
-		Vertex(0.5f, -0.5f, 1.f, 1.0f, 1.0f), //  Bottom Right
+		Vertex(-0.5f, -0.5f, 0.f, 0.0f, 1.0f), // Bottom Left
+		Vertex(-0.5f, 0.5f, 0.f, 0.f, 0.f), // Top Left
+		Vertex(0.5f, 0.5f, 0.f, 1.0f, 0.0f), //  Top Right
+		Vertex(0.5f, -0.5f, 0.f, 1.0f, 1.0f), //  Bottom Right
 	};
 
 	DWORD indices[] =
@@ -309,5 +321,8 @@ bool Graphics::InitializeScene()
 		ErrorLogger::Log(hr, "Failed to create wic texture from file.");
 		return false;
 	}
+
+	camera.SetPosition(0.f, 0.f, -2.f);
+	camera.SetProjectionValues(90.f, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.1f, 1000.f);
 	return true;
 }
