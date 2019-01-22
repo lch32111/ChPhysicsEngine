@@ -20,7 +20,7 @@ int APIENTRY WinMain
 	Engine engine;
 	if(engine.Initialize(hInstance, "Title", "MyWindowClass", 800, 600))
 	{
-		while (engine.ProcessMessages() == true)
+		while (engine.ProcessMessages() == true && engine.exit == false)
 		{
 			engine.Update();
 			engine.RenderFrame();

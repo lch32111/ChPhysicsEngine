@@ -3,13 +3,13 @@
 Physics::Physics()
 {
 	timeStep = 1.f / 60.f;
-	iteration = 7;
+	maxIteration = 20;
 	gravity.Set(0.f, -10.f);
 
 	numBodies = 0;
 	numJoints = 0;
 
-	world = new Chan::chLiteWorld(gravity, iteration);
+	world = new Chan::chLiteWorld(gravity, maxIteration / 5);
 }
 
 Physics::~Physics()
@@ -50,6 +50,31 @@ void Physics::launchBomb()
 	bomb->angularVelocity = Chan::Random(-20.f, 20.f);
 }
 
+void Physics::demo0()
+{
+	world->Clear();
+	numBodies = 0;
+	numJoints = 0;
+	bomb = NULL;
+
+	Chan::chLiteBody* b = bodies;
+
+	b->Set(Chan::ChVector2(100.0f, 20.0f), FLT_MAX);
+	b->position.Set(0.0f, -0.5f * b->width.y);
+	world->Add(b);
+	++b; ++numBodies;
+
+	b->Set(Chan::ChVector2(1.0f, 1.0f), 100.0f);
+	b->position.Set(0.0f, 4.0f);
+	world->Add(b);
+	++b; ++numBodies;
+
+	b->Set(Chan::ChVector2(1.0f, 1.0f), 200.0f);
+	b->position.Set(0.0f, 5.0f);
+	world->Add(b);
+	++b; ++numBodies;
+}
+
 void Physics::demo1()
 {
 	world->Clear();
@@ -68,6 +93,33 @@ void Physics::demo1()
 	b->position.Set(0.0f, 4.0f);
 	world->Add(b);
 	++b; ++numBodies;
+}
+
+void Physics::demo2()
+{
+	world->Clear();
+	numBodies = 0;
+	numJoints = 0;
+	bomb = NULL;
+
+	Chan::chLiteBody* b = bodies;
+
+	b->Set(Chan::ChVector2(100.f, 20.f), Chreal_max);
+	b->position.Set(0.f, -0.5f * b->width.y);
+	world->Add(b);
+	++b; ++numBodies;
+
+	bool wideandshort = false;
+
+	for (unsigned i = 0; i < 8; ++i)
+	{
+		b->Set(Chan::ChVector2(wideandshort ? 0.3f : 1.0f, 0.5f), 1.f);
+		b->position.Set(0.f, 0.51f + i * 0.65f);
+		world->Add(b);
+		++b; ++numBodies;
+
+		wideandshort = !wideandshort;
+	}
 }
 
 void Physics::demo3()
@@ -138,7 +190,7 @@ void Physics::demo4()
 	world->Add(b);
 	++b; ++numBodies;
 
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 15; ++i)
 	{
 		b->Set(Chan::ChVector2(1.0f, 1.0f), 1.0f);
 		b->friction = 0.2f;
@@ -168,11 +220,11 @@ void Physics::demo5()
 	Chan::ChVector2 x(-6.0f, 0.75f);
 	Chan::ChVector2 y;
 
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 7; ++i)
 	{
 		y = x;
 
-		for (int j = i; j < 10; ++j)
+		for (int j = i; j < 7; ++j)
 		{
 			b->Set(Chan::ChVector2(1.0f, 1.0f), 10.0f);
 			b->friction = 0.2f;
@@ -186,6 +238,48 @@ void Physics::demo5()
 		//x += Chan::ChVector2(0.5625f, 1.125f);
 		x += Chan::ChVector2(0.5625f, 2.0f);
 	}
+}
+
+void Physics::setWarmStart(bool w)
+{
+	world->warmStarting = w;
+}
+
+bool Physics::isWarmStart()
+{
+	return world->warmStarting;
+}
+
+void Physics::setAccumImpulse(bool a)
+{
+	world->accumulateImpulses = a;
+}
+
+bool Physics::isAccumImpulse()
+{
+	return world->accumulateImpulses;
+}
+
+void Physics::setPosCorrection(bool c)
+{
+	world->positionCorrection = c;
+}
+
+bool Physics::isPosCoorection()
+{
+	return world->positionCorrection;
+}
+
+void Physics::increaseIteration()
+{
+	if (world->iterations < maxIteration)
+		++world->iterations;
+}
+
+void Physics::decreaseIteration()
+{
+	if (world->iterations > 1)
+		--world->iterations;
 }
 
 

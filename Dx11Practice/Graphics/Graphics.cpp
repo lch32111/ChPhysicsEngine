@@ -18,7 +18,7 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 	return true;
 }
 
-void Graphics::RenderFrame(actorBox* boxes, unsigned numb)
+void Graphics::RenderFrame(const PhysicsData& pData)
 {
 	float bgColor[] = { 0.1f, 0.1f, 0.1f, 1.f };
 	this->deviceContext->ClearRenderTargetView(this->renderTargetView.Get(), bgColor);
@@ -40,9 +40,9 @@ void Graphics::RenderFrame(actorBox* boxes, unsigned numb)
 	this->deviceContext->IASetIndexBuffer(indicesBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	XMMATRIX viewProj = camera.GetViewMatrix() * camera.GetProjectionMatrix();
-	for (unsigned i = 0; i < numb; ++i)
+	for (unsigned i = 0; i < pData.numActors; ++i)
 	{
-		constantbuffer.data.mat = boxes[i].modelMatrix * viewProj;
+		constantbuffer.data.mat = pData.actors[i].modelMatrix * viewProj;
 		constantbuffer.data.mat = DirectX::XMMatrixTranspose(constantbuffer.data.mat);
 		constantbuffer.ApplyChanges();
 		this->deviceContext->VSSetConstantBuffers(0, 1, constantbuffer.GetAddressOf());
@@ -72,8 +72,20 @@ void Graphics::RenderFrame(actorBox* boxes, unsigned numb)
 	std::string temp = std::to_string(camPos.x) + ' ' + std::to_string(camPos.y) + ' ' + std::to_string(camPos.z);
 	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(temp).c_str(), XMFLOAT2(0, height));
 
-	temp = "Number of Bodies : " + std::to_string(numb);
-	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(temp).c_str(), XMFLOAT2(0, height*2));
+	temp = "Iterations : " + std::to_string(pData.iterations);
+	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(temp).c_str(), XMFLOAT2(0, height * 2));
+
+	temp = "Number of Bodies : " + std::to_string(pData.numActors);
+	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(temp).c_str(), XMFLOAT2(0, height* 3));
+
+	temp = "WarmStart(M) : " + std::to_string(pData.useWarmStart);
+	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(temp).c_str(), XMFLOAT2(0, height * 4));
+
+	temp = "AccumImpulse(N) : " + std::to_string(pData.accumulateImpulse);
+	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(temp).c_str(), XMFLOAT2(0, height * 5));
+
+	temp = "PosCorrection(B) : " + std::to_string(pData.positionCorrection);
+	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(temp).c_str(), XMFLOAT2(0, height * 6));
 
 	spriteBatch->End();
 

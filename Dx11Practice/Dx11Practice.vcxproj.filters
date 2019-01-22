@@ -149,8 +149,8 @@
     <ClInclude Include="Physics\Physics.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="GameActor.h">
-      <Filter>Header Files\Graphics</Filter>
+    <ClInclude Include="Physics\PhysicsData.h">
+      <Filter>Header Files\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

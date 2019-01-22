@@ -5,12 +5,13 @@ bool Engine::Initialize(HINSTANCE hInstance,
 	int width, int height)
 {
 	timer.Start();
+	exit = false;
 
 	if (!this->render_window.Initialize(this, hInstance, window_title, window_class, width, height))
 		return false;
 	if (!gfx.Initialize(this->render_window.GetHWND(), width, height))
 		return false;
-
+	
 	return true;
 }
 
@@ -50,7 +51,7 @@ void Engine::Update()
 		}
 	}
 	*/
-	const float cameraSpeed = 0.005f * dt;
+	const float cameraSpeed = 0.01f * dt;
 	if (keyboard.KeyIsPressed('W'))
 	{	
 		// this->gfx.camera.AdjustPosition(this->gfx.camera.GetForwardVector() * cameraSpeed);
@@ -79,9 +80,22 @@ void Engine::Update()
 		physics.launchBomb();
 	}
 
+	if (keyboard.KeyIsPressed(VK_ESCAPE))
+	{
+		this->exit = true;
+	}
+
+	if (keyboard.KeyIsPressedOnce('0'))
+	{
+		physics.demo0();
+	}
 	if (keyboard.KeyIsPressedOnce('1'))
 	{
 		physics.demo1();
+	}
+	if (keyboard.KeyIsPressedOnce('2'))
+	{
+		physics.demo2();
 	}
 	if (keyboard.KeyIsPressedOnce('3'))
 	{
@@ -96,19 +110,41 @@ void Engine::Update()
 		physics.demo5();
 	}
 
+	if (keyboard.KeyIsPressedOnce(VK_OEM_PLUS))
+		physics.increaseIteration();
+	if (keyboard.KeyIsPressedOnce(VK_OEM_MINUS))
+		physics.decreaseIteration();
+
+	if (keyboard.KeyIsPressedOnce('M'))
+	{
+		physics.setWarmStart(!physics.isWarmStart());
+	}
+	if (keyboard.KeyIsPressedOnce('N'))
+	{
+		physics.setAccumImpulse(!physics.isAccumImpulse());
+	}
+	if (keyboard.KeyIsPressedOnce('B'))
+	{
+		physics.setPosCorrection(!physics.isPosCoorection());
+	}
+
 	physics.step();
 }
 
 void Engine::RenderFrame()
 {
 	Chan::chLiteWorld* w = physics.getWorld();
-	
-	for (unsigned i = 0; i < w->bodies.size(); ++i)
+	pData.iterations = w->iterations;
+	pData.useWarmStart = w->warmStarting;
+	pData.accumulateImpulse = w->accumulateImpulses;
+	pData.positionCorrection = w->positionCorrection;
+	pData.numActors = w->bodies.size();
+	for (unsigned i = 0; i < pData.numActors; ++i)
 	{
-		actors[i].modelMatrix = XMMatrixScaling(w->bodies[i]->width.x, w->bodies[i]->width.y, 0.f);
-		actors[i].modelMatrix *= XMMatrixRotationZ(w->bodies[i]->rotation);
-		actors[i].modelMatrix *= XMMatrixTranslation(w->bodies[i]->position.x, w->bodies[i]->position.y, 0.f);
+		pData.actors[i].modelMatrix = XMMatrixScaling(w->bodies[i]->width.x, w->bodies[i]->width.y, 0.f);
+		pData.actors[i].modelMatrix *= XMMatrixRotationZ(w->bodies[i]->rotation);
+		pData.actors[i].modelMatrix *= XMMatrixTranslation(w->bodies[i]->position.x, w->bodies[i]->position.y, 0.f);
 	}
 
-	gfx.RenderFrame(actors, w->bodies.size());
+	gfx.RenderFrame(pData);
 }

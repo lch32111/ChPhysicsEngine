@@ -129,7 +129,8 @@ void Chan::chLiteArbiter::ApplyImpulse()
 		// Compute normal impulse
 		ChReal vn = dot(dv, c->normal);
 
-		ChReal dPn = c->massNormal * (-vn + c->bias);
+		const float restitution = -0.0;
+		ChReal dPn = c->massNormal * (-(1 + restitution) * vn + c->bias);
 
 		if (chLiteWorld::accumulateImpulses)
 		{
@@ -151,6 +152,8 @@ void Chan::chLiteArbiter::ApplyImpulse()
 
 		b2->velocity += b2->invMass * Pn;
 		b2->angularVelocity += b2->invI * Cross(c->r2, Pn);
+		
+		dv = b2->velocity + Cross(b2->angularVelocity, c->r2) - b1->velocity - Cross(b1->angularVelocity, c->r1);
 
 		ChVector2 tangent = Cross(c->normal, ChReal(1.0));
 		ChReal vt = dot(dv, tangent);
@@ -233,31 +236,43 @@ int ClipSegmentToLine(ClipVertex vOut[2], ClipVertex vIn[2],
 	int numOut = 0;
 
 	// Calculate the distance of end points to the line
+	// It's equivalent to the distance from vertex to plane in 3D.
+	// If distance0 > 0 , the vertex in on the side of plane normal.
 	Chan::ChReal distance0 = dot(normal, vIn[0].v) - offset;
 	Chan::ChReal distance1 = dot(normal, vIn[1].v) - offset;
 
-	// If the points are behind the plane
+	// If the points are behind the plane, meaning on the side oppostite the normal,
+	// So, we have to keep it. we don't need to clip it.
 	if (distance0 <= Chan::ChReal(0.0)) vOut[numOut++] = vIn[0];
 	if (distance1 <= Chan::ChReal(0.0)) vOut[numOut++] = vIn[1];
 
 	// If the points are on different sides of the plane
+	// We have to clip it.
 	if (distance0 * distance1 < Chan::ChReal(0.0))
 	{
 		// Find intersection point of edge and plane
+		// You will get to know why this line should be like this
+		// If you draw graph on your paper.
 		Chan::ChReal interp = distance0 / (distance0 - distance1);
 		vOut[numOut].v = vIn[0].v + interp * (vIn[1].v - vIn[0].v);
+
+		// If vIn[0] is on the side of normal
+		// That is, you should put the clipped information on the Out ClipVertex
 		if (distance0 > Chan::ChReal(0.0))
 		{
 			vOut[numOut].fp = vIn[0].fp;
-			vOut[numOut].fp.e.inEdge1 = clipEdge;
-			vOut[numOut].fp.e.inEdge2 = NO_EDGE;
+			vOut[numOut].fp.e.inEdge1 = clipEdge; // Reference Face's clipEdge is the inEdge of this clipped vertex
+			vOut[numOut].fp.e.inEdge2 = NO_EDGE;  // Delete previous inEdge
+			// So now this clip vertex consists of inEdge1(from reference facae) and outEdge2(from incident face) 
 		}
+		// in this case, vIn[0] is on the opposite side of normal.
+		// So vIn[1] is on the side of normal. you should put the clipped information on the Out ClipVertex
 		else
 		{
 			vOut[numOut].fp = vIn[1].fp;
-			vOut[numOut].fp.e.outEdge1 = clipEdge;
-			vOut[numOut].fp.e.outEdge2 = NO_EDGE;
-
+			vOut[numOut].fp.e.outEdge1 = clipEdge; // Reference Face's clipedge is outedge of this cliped vertex
+			vOut[numOut].fp.e.outEdge2 = NO_EDGE; // Delete previous outEdge
+			// So now this clip vertex consists of inEdge2(from incident face) and outEdge1(from reference face)
 		}
 
 		++numOut;
@@ -266,62 +281,93 @@ int ClipSegmentToLine(ClipVertex vOut[2], ClipVertex vIn[2],
 	return numOut;
 }
 
-static void ComputeIncidentEdge(ClipVertex c[2], const Chan::ChVector2& h, const Chan::ChVector2& pos,
-	const Chan::ChMat22& Rot, const Chan::ChVector2& normal)
+void ComputeIncidentEdge(ClipVertex c[2], 
+	const Chan::ChVector2& h, // half extents
+	const Chan::ChVector2& pos,
+	const Chan::ChMat22& Rot, 
+	const Chan::ChVector2& normal)
 {
 	// The normal is from the reference box. Convert it.
 	// to the incident boxe's frame and flip sign.
-	Chan::ChMat22 RotT = Rot.Transpose();
-	Chan::ChVector2 n = -(RotT * normal);
+	Chan::ChMat22 RotT = Rot.Transpose(); // World to Local
+	Chan::ChVector2 n = -(RotT * normal); // From World Normal to Local
 	Chan::ChVector2 nAbs = Abs(n);
 
-	if (nAbs.x > nAbs.y)
+	// Box vertex and edge numbering:
+	//        ^ y
+	//        |
+	//        e1
+	//   v2 ------ v1
+	//    |        |
+	// e2 |        | e4  --> x
+	//    |        |
+	//   v3 ------ v4
+	//        e3
+	// nAbs.x > nAbs.y means that we have to check left or right edges on the box
+	// the incident edges of incident face will be e1, e4, e3 with positive n.x
+	// with negative n.x, the edges will be e1, e2, e3.
+	// else if(nAbs.x < nAbs.y) means that we have to check up or down edges on the box
+	// the incident edges of incident face will be e2, e1, e4 with positinve n.y.
+	// with negative n.y, the edges will be e2, e3, e4.
+	// 
+	// You will get to know why we use Absolute Vector to check which axis to use between x-axis and y-axis
+	// if you draw and write your own box on the paper.
+	// The notion of in/out Edge is related to the winding of the edges.
+	// The box above is specified in Counter-Clock Wise(CCW) winding.
+	// So, inEdge means the first edge to one vertex, and outEdge means the second edge out of one vertex.
+	// And in/outEdge1 means edges of reference face.
+	// in/outEdge2 means edges of Incident face.
+	
+	if (nAbs.x > nAbs.y) // X-axis is incident area
 	{
+		// Right X-axis
 		if (Chan::Sign(n.x) > Chan::ChReal(0.0))
 		{
-			c[0].v.Set(h.x, -h.y);
-			c[0].fp.e.inEdge2 = EDGE3;
+			c[0].v.Set(h.x, -h.y); // Vertex 4
+			c[0].fp.e.inEdge2 = EDGE3; 
 			c[0].fp.e.outEdge2 = EDGE4;
 
-			c[1].v.Set(h.x, h.y);
+			c[1].v.Set(h.x, h.y); // Vertex 1
 			c[1].fp.e.inEdge2 = EDGE4;
 			c[1].fp.e.outEdge2 = EDGE1;
 		}
-		else
+		else // Left X-axis
 		{
-			c[0].v.Set(-h.x, h.y);
+			c[0].v.Set(-h.x, h.y); // Vertex 2
 			c[0].fp.e.inEdge2 = EDGE1;
 			c[0].fp.e.outEdge2 = EDGE2;
 
-			c[1].v.Set(-h.x, -h.y);
+			c[1].v.Set(-h.x, -h.y); // Vertex 3
 			c[1].fp.e.inEdge2 = EDGE2;
 			c[1].fp.e.outEdge2 = EDGE3;
 		}
 	}
-	else
+	else // Y-axis is incident area
 	{
+		// Upper Y-axis
 		if (Chan::Sign(n.y) > Chan::ChReal(0.0))
 		{
-			c[0].v.Set(h.x, h.y);
+			c[0].v.Set(h.x, h.y); // Vertex 1
 			c[0].fp.e.inEdge2 = EDGE4;
 			c[0].fp.e.outEdge2 = EDGE1;
 
-			c[1].v.Set(-h.x, h.y);
+			c[1].v.Set(-h.x, h.y); // Vertex 2
 			c[1].fp.e.inEdge2 = EDGE1;
 			c[1].fp.e.outEdge2 = EDGE2;
 		}
-		else
+		else // Lower Y-axis
 		{
-			c[0].v.Set(-h.x, -h.y);
+			c[0].v.Set(-h.x, -h.y); // Vertex 3
 			c[0].fp.e.inEdge2 = EDGE2;
 			c[0].fp.e.outEdge2 = EDGE3;
 
-			c[1].v.Set(h.x, -h.y);
+			c[1].v.Set(h.x, -h.y); // Vertex 4
 			c[1].fp.e.inEdge2 = EDGE3;
 			c[1].fp.e.outEdge2 = EDGE4;
 		}
 	}
 
+	// Rotate and Translate the clip vertex to the original vertex position. (from local to world)
 	c[0].v = pos + Rot * c[0].v;
 	c[1].v = pos + Rot * c[1].v;
 }
@@ -374,12 +420,28 @@ int Chan::Collide(Contact* contacts, chLiteBody* bodyA, chLiteBody* bodyB)
 	// Box A faces
 	axis = FACE_A_X;
 	t_separation = faceA.x;
+	
+	/*
+	 * The way of determining the normal is that, if you assume the FACE_A_X should be a least penetration axis
+	 * dA is A's Local Space from A center to B center, and if its x component is over 0,
+	 * The colliding direction of A with B is Right X axis.
+	 * And each column of rotatio matrix, specifically the local to world matrix, means
+	 * [  Vec1(Local Axis X in terms of World)   Vec2(Local Axis Y in terms of World) ].
+	 * So you can use just col1 or -col1 if the normal is pointing toward left.
+	 *
+	 * To simplify the explanation according to the Erin Catto's presentation,
+	 * In 2D, the separating axis is a face normal.
+	 */
 	normal = dA.x > ChReal(0.0) ? RotA.col1 : -RotA.col1;
 
 	const ChReal relativeTol = ChReal(0.95);
 	const ChReal absoluteTol = ChReal(0.01);
 
-	// favor previous axis, taking out more value of it.
+	// To find the least penetration axis in the consistent way,
+	// favor original axis to get better float-point comparison
+	// The reason why we have to find the least penetration axis, you will get to know
+	// if you imagine the sitatuon, where two boxes overlaps and you have to calculate each penetration axis value manually.
+	// Erin's explanation on this : https://pybullet.org/Bullet/phpBB3/viewtopic.php?f=4&t=398
 	if (faceA.y > relativeTol * t_separation + absoluteTol * hA.y)
 	{
 		axis = FACE_A_Y;
@@ -402,6 +464,27 @@ int Chan::Collide(Contact* contacts, chLiteBody* bodyA, chLiteBody* bodyB)
 		normal = dB.y > ChReal(0.0) ? RotB.col2 : -RotB.col2;
 	}
 
+	/*
+	 * Clipping Setup : 
+	 * 1. Identify Reference Face -> We already know what is reference face with least seperating axis
+	 * 2. Identify Incident Face -> We will calculate the incident face with ComputeIncidentEdge() function
+	 * 3. And then clip the face to the edge, using Sutherland-Hodgman clipping, using ClipSegmentToLine() function.
+	 * refer necessarily to the Erin Catto's presentation for Box-Box Clipping
+	 * You Should remember this diagram again
+		// Box vertex and edge numbering:
+		//
+		//        ^ y
+		//        |
+		//        e1
+		//   v2 ------ v1
+		//    |        |
+		// e2 |        | e4  --> x
+		//    |        |
+		//   v3 ------ v4
+		//        e3
+	 * 
+	 */
+
 	// Setup clipping plane data based on the separating axis
 	ChVector2 frontNormal, sideNormal;
 	ClipVertex incidentEdge[2];
@@ -415,12 +498,60 @@ int Chan::Collide(Contact* contacts, chLiteBody* bodyA, chLiteBody* bodyB)
 		{
 			frontNormal = normal;
 			front = dot(posA, frontNormal) + hA.x;
+			/*
+			 * ClipVertex has the next structure
+			 * struct ClipVertex
+				{
+					ClipVertex() { fp.value = 0; }
+
+					Chan::ChVector2 v;
+					Chan::FeaturePair fp;
+				};
+			 * FeaturePair has the next union structure
+			 * union FeaturePair
+				{
+					struct Edges
+					{
+						char inEdge1;
+						char outEdge1;
+						char inEdge2;
+						char outEdge2;
+					} e;
+					int value;
+				};
+			 *
+			 * FeaturePair will be used to specify which edges are related to the collision area.
+			 * And the value will be used to identify the old contact to accumulate the impulses.
+			 * So ComputeIncidentEdge will not use "int value" member.
+			 * And, ComputeIncidentEdge will fill inEdge2, outEdge2.
+			 * I guess so far the 2 means the second box(B). So, We will calculate B's incident edge.
+			 * In case of the least penetration axis from Body B, A will be assumed as Body B, opposite one.
+			 * It will be easire for you to think of 2 as a opposite one.
+			 * And 1 means the standard one.
+			 */
+
+			// Informations needed to get clip the incident edge in ClipSegmentToLine function
 			sideNormal = RotA.col2;
 			ChReal side = dot(posA, sideNormal);
-			negSide = -side + hA.y;
+			negSide = -side + hA.y; 
 			posSide = side + hA.y;
 			negEdge = EDGE3;
 			posEdge = EDGE1;
+			// Informations needed to get clip the incident edge in ClipSegmentToLine function
+
+			/*
+			 * ClipSegmentToLine uses Sutherland-Hodgman clipping.
+			 * It means extending the edges to the plane and clipping incident edges
+			 * so, the informations above for the ClipSegmentToLine function are related to edges and planes
+			 * especially, negSide and posSide means offset of plane. However, in 2D, There is no plane.
+			 * So, it is the line offset. But, the reason why negside = -side + hA.y is that,
+			 * the negSide has the opposite normal. So, If it has the same normal with posSide,
+			 * negSide offset will be side - hA.y. Since it has opposite direction, we have to negate the negSide.
+			 * ClipSegmentToLine will use these offset to distinguish whether the clip vertex is on the plane(line) normal or not.
+			 * If clip vertex is on the plane(line) normal, we have to clip it. Otherwise, we have to keep it, because it's begine the 
+			 * plane.
+			 */
+			
 			ComputeIncidentEdge(incidentEdge, hB, posB, RotB, frontNormal);
 		}
 		break;
@@ -428,12 +559,14 @@ int Chan::Collide(Contact* contacts, chLiteBody* bodyA, chLiteBody* bodyB)
 		{
 			frontNormal = normal;
 			front = dot(posA, frontNormal) + hA.y;
+			
 			sideNormal = RotA.col1;
 			ChReal side = dot(posA, sideNormal);
 			negSide = -side + hA.x;
 			posSide = side + hA.x;
 			negEdge = EDGE2;
 			posEdge = EDGE4;
+			
 			ComputeIncidentEdge(incidentEdge, hB, posB, RotB, frontNormal);
 		}
 		break;
@@ -441,12 +574,14 @@ int Chan::Collide(Contact* contacts, chLiteBody* bodyA, chLiteBody* bodyB)
 		{
 			frontNormal = -normal;
 			front = dot(posB, frontNormal) + hB.x;
+			
 			sideNormal = RotB.col2;
 			ChReal side = dot(posB, sideNormal);
 			negSide = -side + hB.y;
 			posSide = side + hB.y;
 			negEdge = EDGE3;
 			posEdge = EDGE1;
+
 			ComputeIncidentEdge(incidentEdge, hA, posA, RotA, frontNormal);
 		}
 		break;
@@ -454,16 +589,25 @@ int Chan::Collide(Contact* contacts, chLiteBody* bodyA, chLiteBody* bodyB)
 		{
 			frontNormal = -normal;
 			front = dot(posB, frontNormal) + hB.y;
+			
 			sideNormal = RotB.col1;
 			ChReal side = dot(posB, sideNormal);
 			negSide = -side + hB.x;
 			posSide = side + hB.x;
 			negEdge = EDGE2;
 			posEdge = EDGE4;
+
 			ComputeIncidentEdge(incidentEdge, hA, posA, RotA, frontNormal);
 		}
 		break;
 	}
+
+	/*
+	 * Now you get the incident edge from the ComputeIncidentEdge()
+	 * And you also hold the information of side edges of the reference edge
+	 * The reason why we get the side information is for cliipping the incident edge with side edge.
+	 * It's Sutherland-Hodgman algorithm for clipping polygons.
+	 */
 
 	// clip other face with 5 box planes (1 face plane, 4 edge plane)
 	ClipVertex clipPoints1[2];
@@ -488,13 +632,24 @@ int Chan::Collide(Contact* contacts, chLiteBody* bodyA, chLiteBody* bodyB)
 	{
 		ChReal separation = dot(frontNormal, clipPoints2[i].v) - front;
 
+		// Check if the clipped veritces are behind the reference face
+		// If it is not, the vertex is not the colliding point
 		if (separation <= 0)
 		{
 			contacts[numContacts].separation = separation;
 			contacts[numContacts].normal = normal;
 			// slide contact point onto reference face (easy to cull)
+			// imagine the contact manifold. if the contact manifold will not be modifed to the reference face,
+			// the contact resolution will work in the wrong way a little.
+			// https://www.reddit.com/r/box2d/comments/aim8rm/box2d_lite_collision/
+			// I did self-question and self-answer on this reddit post.
 			contacts[numContacts].position = clipPoints2[i].v - separation * frontNormal;
 			contacts[numContacts].feature = clipPoints2[i].fp;
+
+			// this collision assumes that reference face is boxA. 
+			// Because the incident edge is always put on in/outEdge2, boxB.
+			// It means the edges will be calculated in terms of A.
+			// So If the axis will be from B, we need to flip the feature edge specifying where the edge is from.
 			if (axis == FACE_B_X || axis == FACE_B_Y)
 				Flip(contacts[numContacts].feature);
 			++numContacts;

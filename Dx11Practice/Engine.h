@@ -2,8 +2,7 @@
 
 #include "WindowContainer.h"
 #include "Timer.h"
-#include "GameActor.h"
-
+#include "Physics/PhysicsData.h"
 
 class Engine : WindowContainer
 {
@@ -14,7 +13,10 @@ public:
 	bool ProcessMessages();
 	void Update();
 	void RenderFrame();
+
+	bool exit;
 private:
 	Timer timer;
-	actorBox actors[200];
+	
+	PhysicsData pData;
 };

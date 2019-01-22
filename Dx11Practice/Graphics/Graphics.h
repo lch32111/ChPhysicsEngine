@@ -7,7 +7,7 @@
 #include "ConstantBuffer.h"
 #include  "Camera.h"
 #include "../Timer.h"
-#include "../GameActor.h"
+#include "../Physics/PhysicsData.h"
 
 #include <DirectXTK/SpriteBatch.h>
 #include <DirectXTK/SpriteFont.h>
@@ -17,7 +17,7 @@ class Graphics
 {
 public:
 	bool Initialize(HWND hwnd, int width, int height);
-	void RenderFrame(actorBox* boxes, unsigned numb);
+	void RenderFrame(const PhysicsData& pData);
 
 	Camera camera;
 private:
