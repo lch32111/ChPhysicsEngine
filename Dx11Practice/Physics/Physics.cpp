@@ -20,6 +20,12 @@ Physics::~Physics()
 void Physics::step()
 {
 	world->Step(timeStep);
+	if (bomb)
+	{
+		Chan::ChVector2 bombVel = bomb->velocity;
+		bombVel.x = -5.0f;
+		bomb->velocity = bombVel;
+	}
 }
 
 Chan::chLiteWorld * Physics::getWorld()
@@ -64,7 +70,7 @@ void Physics::demo0()
 	world->Add(b);
 	++b; ++numBodies;
 
-	b->Set(Chan::ChVector2(1.0f, 1.0f), 100.0f);
+	b->Set(Chan::ChVector2(1.0f, 1.0f), 10.0f);
 	b->position.Set(0.0f, 4.0f);
 	world->Add(b);
 	++b; ++numBodies;
@@ -238,6 +244,11 @@ void Physics::demo5()
 		//x += Chan::ChVector2(0.5625f, 1.125f);
 		x += Chan::ChVector2(0.5625f, 2.0f);
 	}
+}
+
+void Physics::demo6()
+{
+
 }
 
 void Physics::setWarmStart(bool w)

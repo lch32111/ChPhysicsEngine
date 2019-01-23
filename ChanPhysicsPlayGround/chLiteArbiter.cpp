@@ -2,7 +2,6 @@
 #include "chLiteBody.h"
 #include "chLiteWorld.h"
 
-#include <iostream>
 Chan::chLiteArbiter::chLiteArbiter(chLiteBody * b1, chLiteBody * b2)
 {
 	if (b1 < b2)
@@ -145,8 +144,7 @@ void Chan::chLiteArbiter::ApplyImpulse()
 		}
 
 		// Apply contact impulse
-		ChVector2 Pn = dPn * c->normal;
-
+		ChVector2 Pn = dPn * c->normal;		
 		b1->velocity -= b1->invMass * Pn;
 		b1->angularVelocity -= b1->invI * Cross(c->r1, Pn);
 

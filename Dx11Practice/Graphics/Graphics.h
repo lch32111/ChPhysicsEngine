@@ -8,6 +8,7 @@
 #include  "Camera.h"
 #include "../Timer.h"
 #include "../Physics/PhysicsData.h"
+#include "LineRenderer.h"
 
 #include <DirectXTK/SpriteBatch.h>
 #include <DirectXTK/SpriteFont.h>
@@ -67,4 +68,6 @@ private:
 	int windowHeight = 0;
 
 	Timer fpsTimer;
+
+	lineRenderer myLineRenderer;
 };

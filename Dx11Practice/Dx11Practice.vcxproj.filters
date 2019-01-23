@@ -87,6 +87,9 @@
     <ClCompile Include="Physics\Physics.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\LineRenderer.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StringConverter.h">
@@ -152,12 +155,21 @@
     <ClInclude Include="Physics\PhysicsData.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\LineRenderer.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="vertexshader.hlsl">
       <Filter>ShaderFolder</Filter>
     </FxCompile>
     <FxCompile Include="pixelshader.hlsl">
+      <Filter>ShaderFolder</Filter>
+    </FxCompile>
+    <FxCompile Include="lineRendererPixelShader.hlsl">
+      <Filter>ShaderFolder</Filter>
+    </FxCompile>
+    <FxCompile Include="lineRendererVertexShader.hlsl">
       <Filter>ShaderFolder</Filter>
     </FxCompile>
   </ItemGroup>
