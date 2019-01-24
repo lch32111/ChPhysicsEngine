@@ -120,9 +120,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="chAABB.cpp" />
+    <ClCompile Include="chBroadPhase.cpp" />
     <ClCompile Include="chCircle.cpp" />
     <ClCompile Include="chCollision.cpp" />
     <ClCompile Include="chContactSolver.cpp" />
+    <ClCompile Include="chDynamicAABBTree.cpp" />
     <ClCompile Include="chLiteArbiter.cpp" />
     <ClCompile Include="chLiteBody.cpp" />
     <ClCompile Include="chLiteJoint.cpp" />
@@ -132,9 +134,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chAABB.h" />
+    <ClInclude Include="chBroadPhase.h" />
     <ClInclude Include="chCircle.h" />
     <ClInclude Include="chCollision.h" />
     <ClInclude Include="chContactSolver.h" />
+    <ClInclude Include="chDynamicAABBTree.h" />
     <ClInclude Include="chLiteArbiter.h" />
     <ClInclude Include="chLiteBody.h" />
     <ClInclude Include="chLiteJoint.h" />

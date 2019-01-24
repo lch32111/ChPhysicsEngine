@@ -9,7 +9,7 @@ Physics::Physics()
 	numBodies = 0;
 	numJoints = 0;
 
-	world = new Chan::chLiteWorld(gravity, maxIteration / 5);
+	world = new Chan::chLiteWorld(gravity, maxIteration / 2);
 }
 
 Physics::~Physics()
@@ -20,12 +20,6 @@ Physics::~Physics()
 void Physics::step()
 {
 	world->Step(timeStep);
-	if (bomb)
-	{
-		Chan::ChVector2 bombVel = bomb->velocity;
-		bombVel.x = -5.0f;
-		bomb->velocity = bombVel;
-	}
 }
 
 Chan::chLiteWorld * Physics::getWorld()
@@ -248,7 +242,87 @@ void Physics::demo5()
 
 void Physics::demo6()
 {
+	world->Clear();
+	numBodies = 0;
+	numJoints = 0;
+	bomb = NULL;
 
+	Chan::chLiteBody* b = bodies;
+	Chan::chLiteJoint* j = joints;
+
+	Chan::chLiteBody* b1 = b;
+	b->Set(Chan::ChVector2(100.0f, 20.0f), FLT_MAX);
+	b->position.Set(0.0f, -0.5f * b->width.y);
+	world->Add(b);
+	++b; ++numBodies;
+
+	b->Set(Chan::ChVector2(12.0f, 0.5f), FLT_MAX);
+	b->position.Set(-1.5f, 10.0f);
+	world->Add(b);
+	++b; ++numBodies;
+
+	for (int i = 0; i < 10; ++i)
+	{
+		b->Set(Chan::ChVector2(0.2f, 2.0f), 10.0f);
+		b->position.Set(-6.0f + 1.0f * i, 11.125f);
+		b->friction = 0.1f;
+		world->Add(b);
+		++b; ++numBodies;
+	}
+
+	
+	b->Set(Chan::ChVector2(14.0f, 0.5f), FLT_MAX);
+	b->position.Set(1.0f, 6.0f);
+	b->rotation = 0.3f;
+	world->Add(b);
+	++b; ++numBodies;
+
+	Chan::chLiteBody* b2 = b;
+	b->Set(Chan::ChVector2(0.5f, 3.0f), FLT_MAX);
+	b->position.Set(-7.0f, 4.0f);
+	world->Add(b);
+	++b; ++numBodies;
+
+	Chan::chLiteBody* b3 = b;
+	b->Set(Chan::ChVector2(12.0f, 0.25f), 20.0f);
+	b->position.Set(-0.9f, 1.0f);
+	world->Add(b);
+	++b; ++numBodies;
+
+	j->Set(b1, b3, Chan::ChVector2(-2.0f, 1.0f));
+	world->Add(j);
+	++j; ++numJoints;
+
+	Chan::chLiteBody* b4 = b;
+	b->Set(Chan::ChVector2(0.5f, 0.5f), 10.0f);
+	b->position.Set(-10.0f, 15.0f);
+	world->Add(b);
+	++b; ++numBodies;
+
+	j->Set(b2, b4, Chan::ChVector2(-7.0f, 15.0f));
+	world->Add(j);
+	++j; ++numJoints;
+
+	Chan::chLiteBody* b5 = b;
+	b->Set(Chan::ChVector2(2.0f, 2.0f), 20.0f);
+	b->position.Set(6.0f, 2.5f);
+	b->friction = 0.1f;
+	world->Add(b);
+	++b; ++numBodies;
+
+	j->Set(b1, b5, Chan::ChVector2(6.0f, 2.6f));
+	world->Add(j);
+	++j; ++numJoints;
+
+	Chan::chLiteBody* b6 = b;
+	b->Set(Chan::ChVector2(2.0f, 0.2f), 10.0f);
+	b->position.Set(6.0f, 3.6f);
+	world->Add(b);
+	++b; ++numBodies;
+
+	j->Set(b5, b6, Chan::ChVector2(7.0f, 3.5f));
+	world->Add(j);
+	++j; ++numJoints;
 }
 
 void Physics::setWarmStart(bool w)

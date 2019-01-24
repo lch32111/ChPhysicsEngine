@@ -50,8 +50,11 @@ void Graphics::RenderFrame(const PhysicsData& pData)
 	}
 
 	// Line
-	myLineRenderer.addLine(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 5, 0), XMFLOAT3(1, 1, 1));
-	myLineRenderer.addLine(XMFLOAT3(0, 0, 0), XMFLOAT3(1, 4, 0), XMFLOAT3(1, 0, 0));
+	for (unsigned i = 0; i < pData.numJoints; ++i)
+	{
+		myLineRenderer.addLine(pData.joints[i].Line1[0], pData.joints[i].Line1[1], DirectX::XMFLOAT3(DirectX::Colors::Yellow));
+		myLineRenderer.addLine(pData.joints[i].Line2[0], pData.joints[i].Line2[1], DirectX::XMFLOAT3(DirectX::Colors::Yellow));
+	}
 	myLineRenderer.renderAndFlush(this->deviceContext.Get(), DirectX::XMMatrixTranspose(viewProj));
 	// Line
 
@@ -234,7 +237,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 
-	rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
+	rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
 	rasterizerDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
 	hr = this->device->CreateRasterizerState(&rasterizerDesc, rasterizerState.GetAddressOf());
 	if (FAILED(hr))
@@ -359,10 +362,10 @@ bool Graphics::InitializeScene()
 	}
 
 	camera.SetPosition(0.f, 8.f, 0.f);
-	camera.SetProjectionValues(90.f, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.1f, 1000.f);
+	// camera.SetProjectionValues(90.f, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.1f, 1000.f);
 	float aspect = (float)windowWidth / (float)windowHeight;
 	float zoom = 10.f;
 	float pan_y = 8.0;
-	// camera.SetOrthoValue(zoom * aspect * 2, zoom * 2, -1, 1);
+	camera.SetOrthoValue(zoom * aspect * 2, zoom * 2, -1, 1);
 	return true;
 }

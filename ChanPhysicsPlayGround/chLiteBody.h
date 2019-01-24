@@ -32,6 +32,8 @@ namespace Chan
 		ChReal friction;
 		ChReal mass, invMass;
 		ChReal I, invI;
+
+		int proxyId;
 	};
 }
 

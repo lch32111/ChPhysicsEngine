@@ -41,12 +41,12 @@ void Chan::chLiteJoint::PreStep(ChReal inv_dt)
 	K1.col1.y = ChReal(0.0);						K1.col2.y = body1->invMass + body2->invMass;
 
 	ChMat22 K2;
-	K2.col1.x = body1->invI * r1.y * r1.y;		K2.col1.x = -body1->invI * r1.x * r1.y;
+	K2.col1.x = body1->invI * r1.y * r1.y;		K2.col2.x = -body1->invI * r1.x * r1.y;
 	K2.col1.y = -body1->invI * r1.x * r1.y;		K2.col2.y = body1->invI * r1.x * r1.x;
 
 	ChMat22 K3;
-	K3.col1.x = body2->invI * r1.y * r1.y;		K3.col1.x = -body2->invI * r1.x * r1.y;
-	K3.col1.y = -body2->invI * r1.x * r1.y;		K3.col2.y = body2->invI * r1.x * r1.x;
+	K3.col1.x = body2->invI * r2.y * r2.y;		K3.col2.x = -body2->invI * r2.x * r2.y;
+	K3.col1.y = -body2->invI * r2.x * r2.y;		K3.col2.y = body2->invI * r2.x * r2.x;
 
 	ChMat22 K = K1 + K2 + K3;
 	K.col1.x += softness;
@@ -73,7 +73,7 @@ void Chan::chLiteJoint::PreStep(ChReal inv_dt)
 		body1->angularVelocity -= body1->invI * Cross(r1, P);
 
 		body2->velocity += body2->invMass * P;
-		body2->angularVelocity += body2->invI * Cross(r1, P);
+		body2->angularVelocity += body2->invI * Cross(r2, P);
 	}
 	else
 	{
@@ -93,8 +93,8 @@ void Chan::chLiteJoint::ApplyImpulse()
 	body1->velocity -= body1->invMass * impulse;
 	body1->angularVelocity -= body1->invI * Cross(r1, impulse);
 
-	body2->velocity += body2->invMass * P;
-	body2->angularVelocity += body2->invI * Cross(r1, impulse);
+	body2->velocity += body2->invMass * impulse;
+	body2->angularVelocity += body2->invI * Cross(r2, impulse);
 
 	P += impulse;     
 }

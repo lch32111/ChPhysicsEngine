@@ -65,8 +65,8 @@ void Engine::Update()
 
 	if (keyboard.KeyIsPressed('S'))
 	{
-		this->gfx.camera.AdjustPosition(this->gfx.camera.GetBackwardVector() * cameraSpeed);
-		// this->gfx.camera.AdjustPosition(0.f, -cameraSpeed, 0.f);
+		// this->gfx.camera.AdjustPosition(this->gfx.camera.GetBackwardVector() * cameraSpeed);
+		this->gfx.camera.AdjustPosition(0.f, -cameraSpeed, 0.f);
 	}
 
 	if (keyboard.KeyIsPressed('D'))
@@ -109,6 +109,10 @@ void Engine::Update()
 	{
 		physics.demo5();
 	}
+	if (keyboard.KeyIsPressedOnce('6'))
+	{
+		physics.demo6();
+	}
 
 	if (keyboard.KeyIsPressedOnce(VK_OEM_PLUS))
 		physics.increaseIteration();
@@ -139,11 +143,27 @@ void Engine::RenderFrame()
 	pData.accumulateImpulse = w->accumulateImpulses;
 	pData.positionCorrection = w->positionCorrection;
 	pData.numActors = w->bodies.size();
+	pData.numJoints = w->joints.size();
 	for (unsigned i = 0; i < pData.numActors; ++i)
 	{
 		pData.actors[i].modelMatrix = XMMatrixScaling(w->bodies[i]->width.x, w->bodies[i]->width.y, 0.f);
 		pData.actors[i].modelMatrix *= XMMatrixRotationZ(w->bodies[i]->rotation);
 		pData.actors[i].modelMatrix *= XMMatrixTranslation(w->bodies[i]->position.x, w->bodies[i]->position.y, 0.f);
+	}
+
+	for (unsigned i = 0; i < pData.numJoints; ++i)
+	{
+		Chan::ChVector2 bp = w->joints[i]->body1->position;
+		Chan::ChVector2 ap = bp + Chan::ChMat22(w->joints[i]->body1->rotation) * w->joints[i]->localAnchor1;
+
+		pData.joints[i].Line1[0] = DirectX::XMFLOAT3(bp.x, bp.y, 0);
+		pData.joints[i].Line1[1] = DirectX::XMFLOAT3(ap.x, ap.y, 0);
+
+		bp = w->joints[i]->body2->position;
+		ap = bp + Chan::ChMat22(w->joints[i]->body2->rotation) * w->joints[i]->localAnchor2;
+
+		pData.joints[i].Line2[0] = DirectX::XMFLOAT3(bp.x, bp.y, 0);
+		pData.joints[i].Line2[1] = DirectX::XMFLOAT3(ap.x, ap.y, 0);
 	}
 
 	gfx.RenderFrame(pData);
